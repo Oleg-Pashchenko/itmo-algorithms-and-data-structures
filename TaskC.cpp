@@ -4,10 +4,8 @@
 
 using namespace std;
 
-
 unordered_map<string, int> variables;
 stack<unordered_map<string, int>> operationsHistory;
-
 
 int getValue(const string &key) {
     if (variables.find(key) == variables.end()) variables[key] = 0;
@@ -27,36 +25,46 @@ bool isMapContainsKey(const unordered_map<string, int> &map, const string &key) 
     return (map.count(key) != 0);
 }
 
+void blockStart() {
+    operationsHistory.emplace();
+}
+
+void blockEnd() {
+    for (auto &[k, v]: operationsHistory.top()) {
+        variables[k] += v;
+    }
+    operationsHistory.pop();
+}
+
+void assignVariable(const string &key, const string &value) {
+    if (!isMapContainsKey(operationsHistory.top(), key)) {
+        operationsHistory.top()[key] = getValue(key);
+    }
+    if (isInt(value)) {
+        variables[key] = stoi(value);
+    } else {
+        variables[key] = getValue(value);
+        cout << variables[key] << endl;
+    }
+    operationsHistory.top()[key] -= getValue(key);
+}
+
 
 int main() {
     string line, key, value;
-    operationsHistory.emplace();
 
+    blockStart();
     while (getline(cin, line)) {
-
-        if (line == "{") operationsHistory.emplace();
-        else if (line == "}") {
-            for (auto &[k, v]: operationsHistory.top()) {
-                variables[k] += operationsHistory.top()[k];
-            }
-            operationsHistory.pop();
+        if (line == "{") {
+            blockStart();
+        } else if (line == "}") {
+            blockEnd();
         } else {
             key = line.substr(0, line.find('='));
             value = line.substr(line.find('=') + 1);
-
-            if (!isMapContainsKey(operationsHistory.top(), key)) {
-                operationsHistory.top()[key] = variables[key];
-            }
-
-            if (isInt(value)) {
-                variables[key] = stoi(value);
-            } else {
-                variables[key] = getValue(value);
-                cout << variables[key] << endl;
-            }
-
-            operationsHistory.top()[key] -= variables[key];
+            assignVariable(key, value);
         }
     }
+
     return 0;
 }
