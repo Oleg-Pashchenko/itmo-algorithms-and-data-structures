@@ -1,3 +1,7 @@
+//
+// Created by Oleg Pashchenko on 10.03.2023.
+//
+
 #include <iostream>
 #include <stack>
 #include <unordered_map>
@@ -31,7 +35,7 @@ void blockStart() {
 
 void blockEnd() {
     for (auto &[k, v]: operationsHistory.top()) {
-        variables[k] += v;
+        variables[k] = v;
     }
     operationsHistory.pop();
 }
@@ -46,7 +50,6 @@ void assignVariable(const string &key, const string &value) {
         variables[key] = getValue(value);
         cout << variables[key] << endl;
     }
-    operationsHistory.top()[key] -= getValue(key);
 }
 
 
@@ -55,6 +58,7 @@ int main() {
 
     blockStart();
     while (getline(cin, line)) {
+
         if (line == "{") {
             blockStart();
         } else if (line == "}") {
